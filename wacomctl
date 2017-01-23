@@ -2,13 +2,17 @@
 
 # Note: Default area 0 0 10208 7424
 
-DEVICE_STYLUS="Wacom Graphire4 4x5 stylus"
-DEVICE_ERASER="Wacom Graphire4 4x5 eraser"
-DEVICE_CURSOR="Wacom Graphire4 4x5 cursor"
-DEVICE_PAD="Wacom Graphire4 4x5 pad"
+DEVICE_STYLUS="Wacom Graphire4 4x5 Pen stylus"
+DEVICE_ERASER="Wacom Graphire4 4x5 Pen eraser"
+DEVICE_CURSOR="Wacom Graphire4 4x5 Pen cursor"
+DEVICE_PAD="Wacom Graphire4 4x5 Pad pad"
 
-AREA_DVI0="0 0 10208 5742"
-AREA_DVI1="464 0 9744 7424"
+AREA_169="0 0 10208 5742"
+AREA_1610="0 0 10208 6380"
+AREA_54="464 0 9744 7424"
+
+AREA_DVI0=$AREA_1610
+AREA_DVI1=$AREA_1610
 
 function select_output_dvi0 {
     xsetwacom set "$DEVICE_STYLUS" MapToOutput DVI-0
@@ -25,10 +29,19 @@ function select_output_dvi1 {
 }
 
 if [ "$1" = "--swap-output" ]; then
-    if [ "$(xsetwacom get "$DEVICE_STYLUS" Area)" = "$AREA_DVI1" ]; then
+    if [ -d "$XDG_RUNTIME_DIR" ]; then
+        mkdir "$XDG_RUNTIME_DIR/wacomctl"
+    else
         select_output_dvi0
+        exit
+    fi
+
+    if [ -f "$XDG_RUNTIME_DIR/wacomctl/secondary" ]; then
+        select_output_dvi0
+        rm "$XDG_RUNTIME_DIR/wacomctl/secondary"
     else
         select_output_dvi1
+        touch "$XDG_RUNTIME_DIR/wacomctl/secondary"
     fi
     exit
 fi
@@ -44,7 +57,7 @@ xsetwacom set "$DEVICE_ERASER" Mode Absolute
 xsetwacom set "$DEVICE_STYLUS" Button 2 3
 xsetwacom set "$DEVICE_STYLUS" Button 3 2
 
-# click on tap"
+# click on tap
 xsetwacom set "$DEVICE_STYLUS" TabletPCButton on
 
 # button for output switch: emulate meta4+f12
